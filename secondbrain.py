@@ -65,9 +65,9 @@ def get_all_cards(user_id, limit=100):
     conn = sqlite3.connect('cards.db')
     c = conn.cursor()
     if limit is None:
-        c.execute('SELECT id, user_id, content FROM cards WHERE user_id = ? ORDER BY id DESC', (user_id,))
+        c.execute('SELECT id, content FROM cards WHERE user_id = ? ORDER BY id DESC', (user_id,))
     else:
-        c.execute('SELECT id, user_id, content FROM cards WHERE user_id = ? ORDER BY id DESC LIMIT ?', (user_id, limit))
+        c.execute('SELECT id, content FROM cards WHERE user_id = ? ORDER BY id DESC LIMIT ?', (user_id, limit))
     cards = c.fetchall()
     conn.close()
     return cards
@@ -86,11 +86,12 @@ def search_cards(user_id, query, threshold=70):
     matched_cards = []
     query = query.lower()
     for card in all_cards:
-        card_content = card[2].lower()
+        card_content = card[1].lower()
         score = fuzz.partial_ratio(query, card_content)
         if score >= threshold:
-            matched_cards.append((card[0], card[2], score))
+            matched_cards.append((card[0], card[1]))  # Append card ID and content
     return matched_cards
+
 
 # Function to update a card in the database
 def update_card(card_id, user_id, content):
@@ -133,8 +134,7 @@ def display_cards_grid(cards, cols=3):
             if i + j < len(cards):
                 with columns[j]:
                     with st.container():
-                        card_id = cards[i+j][0]
-                        card_content = cards[i+j][2]  # Ensure this gets the correct content
+                        card_id, card_content = cards[i+j]
                         display_card_thumbnail(card_id, card_content)
                         st.markdown("---")
 

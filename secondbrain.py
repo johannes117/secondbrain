@@ -41,6 +41,12 @@ def search_cards(query, threshold=70):
             matched_cards.append((card[0], card[1], score))
     return matched_cards
 
+# Function to display a card with Markdown formatting
+def display_card(card_id, content):
+    st.markdown(f"### Card ID: {card_id}")
+    st.markdown(content)
+    st.markdown("---")  # Add a horizontal line after each card
+
 # Initialize the app
 init_db()
 
@@ -51,7 +57,7 @@ option = st.sidebar.selectbox('Choose an action', ['Add Card', 'View All Cards',
 
 if option == 'Add Card':
     st.header('Add a New Card')
-    content = st.text_area('Card Content', height=150)
+    content = st.text_area('Card Content (Markdown supported)', height=150)
     if st.button('Add Card'):
         if content:
             add_card(content)
@@ -63,7 +69,7 @@ elif option == 'View All Cards':
     st.header('All Cards')
     cards = get_all_cards()
     for card in cards:
-        st.text_area(f"Card ID: {card[0]}", value=card[1], height=200)
+        display_card(card[0], card[1])
 
 elif option == 'Search Cards':
     st.header('Search Cards')
@@ -73,7 +79,7 @@ elif option == 'Search Cards':
         results = search_cards(query, threshold)
         if results:
             for result in results:
-                st.write(f"Card ID: {result[0]} | Match Score: {result[2]}")
-                st.text_area("Card Content", value=result[1], height=200)
+                st.write(f"Match Score: {result[2]}")
+                display_card(result[0], result[1])
         else:
             st.warning('No matching cards found')

@@ -58,7 +58,7 @@ This project is a simplified offline version of the MyMind application built wit
 
 2. **Run the Streamlit app:**
     ```bash
-    streamlit run app.py
+    streamlit run secondbrain.py
     ```
 
 ## Usage

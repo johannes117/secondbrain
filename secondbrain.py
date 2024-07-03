@@ -84,7 +84,7 @@ def display_card_thumbnail(card_id, content):
     if st.button("View/Edit", key=f"view_{card_id}"):
         st.session_state.current_screen = "card_viewer"
         st.session_state.current_card_id = card_id
-        st.rerun()
+        st.experimental_rerun()
 
 # Function to display cards in a grid
 def display_cards_grid(cards, cols=3):
@@ -101,23 +101,17 @@ def display_cards_grid(cards, cols=3):
 def home_screen():
     st.title('SecondBrain')
 
-    # Sidebar for adding new cards
-    st.sidebar.title('Add New Card')
-    new_card_content = st.sidebar.text_area('Card Content (Markdown supported)', height=150)
-    if st.sidebar.button('Add Card'):
-        if new_card_content:
-            add_card(new_card_content)
-            st.sidebar.success('Card added successfully!')
-            st.rerun()
-        else:
-            st.sidebar.error('Content cannot be empty')
+    # Button to navigate to Add Card screen
+    if st.button("Add Card"):
+        st.session_state.current_screen = "add_card"
+        st.experimental_rerun()
 
     # Main screen for searching and displaying cards
     search_query = st.text_input('Search Cards', '')
     threshold = st.slider('Fuzzy Match Threshold', 0, 100, 70)
 
     # Number of columns in the grid
-    num_columns = st.sidebar.number_input('Number of columns', min_value=1, max_value=4, value=3)
+    num_columns = st.number_input('Number of columns', min_value=1, max_value=4, value=3)
 
     if search_query:
         results = search_cards(search_query, threshold)
@@ -133,6 +127,24 @@ def home_screen():
         else:
             display_cards_grid(cards, cols=num_columns)
 
+# Function to display the add card screen
+def add_card_screen():
+    st.title('Add New Card')
+
+    new_card_content = st.text_area('Card Content (Markdown supported)', height=150)
+    if st.button('Add Card'):
+        if new_card_content:
+            add_card(new_card_content)
+            st.success('Card added successfully!')
+            st.session_state.current_screen = "home"
+            st.experimental_rerun()
+        else:
+            st.error('Content cannot be empty')
+
+    if st.button("Back to Home"):
+        st.session_state.current_screen = "home"
+        st.experimental_rerun()
+
 # Function to display the card viewer screen
 def card_viewer_screen():
     card = get_card(st.session_state.current_card_id)
@@ -144,7 +156,7 @@ def card_viewer_screen():
 
     if st.button("Back to Home"):
         st.session_state.current_screen = "home"
-        st.rerun()
+        st.experimental_rerun()
 
     # Initialize edit mode in session state if not present
     if 'edit_mode' not in st.session_state:
@@ -153,7 +165,7 @@ def card_viewer_screen():
     # Toggle edit mode
     if st.button("Edit" if not st.session_state.edit_mode else "View"):
         st.session_state.edit_mode = not st.session_state.edit_mode
-        st.rerun()
+        st.experimental_rerun()
 
     if st.session_state.edit_mode:
         # Edit mode
@@ -162,7 +174,7 @@ def card_viewer_screen():
             update_card(st.session_state.current_card_id, edited_content)
             st.success("Card updated successfully!")
             st.session_state.edit_mode = False
-            st.rerun()
+            st.experimental_rerun()
     else:
         # View mode
         st.markdown(card[1])
@@ -172,7 +184,7 @@ def card_viewer_screen():
         delete_card(st.session_state.current_card_id)
         st.success("Card deleted successfully!")
         st.session_state.current_screen = "home"
-        st.rerun()
+        st.experimental_rerun()
 
 # Initialize the app
 init_db()
@@ -184,5 +196,7 @@ if 'current_screen' not in st.session_state:
 # Main app logic
 if st.session_state.current_screen == "home":
     home_screen()
+elif st.session_state.current_screen == "add_card":
+    add_card_screen()
 elif st.session_state.current_screen == "card_viewer":
     card_viewer_screen()

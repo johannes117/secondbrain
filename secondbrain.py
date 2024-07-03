@@ -108,15 +108,11 @@ def home_screen():
 
     # Main screen for searching and displaying cards
     search_query = st.text_input('Search Cards', '')
-    threshold = st.slider('Fuzzy Match Threshold', 0, 100, 70)
-
-    # Number of columns in the grid
-    num_columns = st.number_input('Number of columns', min_value=1, max_value=4, value=3)
 
     if search_query:
-        results = search_cards(search_query, threshold)
+        results = search_cards(search_query, st.session_state.threshold)
         if results:
-            display_cards_grid(results, cols=num_columns)
+            display_cards_grid(results, cols=st.session_state.num_columns)
         else:
             st.warning('No matching cards found')
     else:
@@ -125,7 +121,7 @@ def home_screen():
         if not cards:
             st.info("No cards found. Add some cards to get started!")
         else:
-            display_cards_grid(cards, cols=num_columns)
+            display_cards_grid(cards, cols=st.session_state.num_columns)
 
 # Function to display the add card screen
 def add_card_screen():
@@ -192,6 +188,19 @@ init_db()
 # Initialize session state for navigation
 if 'current_screen' not in st.session_state:
     st.session_state.current_screen = "home"
+if 'threshold' not in st.session_state:
+    st.session_state.threshold = 70
+if 'num_columns' not in st.session_state:
+    st.session_state.num_columns = 3
+
+# Sidebar configuration
+st.set_page_config(initial_sidebar_state="collapsed")
+
+# Sidebar content
+st.sidebar.title('Settings')
+st.sidebar.header('Search Settings')
+st.session_state.threshold = st.sidebar.slider('Fuzzy Match Threshold', 0, 100, 70)
+st.session_state.num_columns = st.sidebar.number_input('Number of columns', min_value=1, max_value=4, value=3)
 
 # Main app logic
 if st.session_state.current_screen == "home":

@@ -135,28 +135,44 @@ def home_screen():
 
 # Function to display the card viewer screen
 def card_viewer_screen():
+    card = get_card(st.session_state.current_card_id)
+    if not card:
+        st.error("Card not found!")
+        return
+
     st.title(f"Card Viewer - Card {st.session_state.current_card_id}")
 
     if st.button("Back to Home"):
         st.session_state.current_screen = "home"
         st.rerun()
 
-    card = get_card(st.session_state.current_card_id)
-    if card:
+    # Initialize edit mode in session state if not present
+    if 'edit_mode' not in st.session_state:
+        st.session_state.edit_mode = False
+
+    # Toggle edit mode
+    if st.button("Edit" if not st.session_state.edit_mode else "View"):
+        st.session_state.edit_mode = not st.session_state.edit_mode
+        st.rerun()
+
+    if st.session_state.edit_mode:
+        # Edit mode
         edited_content = st.text_area("Edit Card Content", value=card[1], height=300)
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("Save Changes"):
-                update_card(st.session_state.current_card_id, edited_content)
-                st.success("Card updated successfully!")
-        with col2:
-            if st.button("Delete Card"):
-                delete_card(st.session_state.current_card_id)
-                st.success("Card deleted successfully!")
-                st.session_state.current_screen = "home"
-                st.rerun()
+        if st.button("Save Changes"):
+            update_card(st.session_state.current_card_id, edited_content)
+            st.success("Card updated successfully!")
+            st.session_state.edit_mode = False
+            st.rerun()
     else:
-        st.error("Card not found!")
+        # View mode
+        st.markdown(card[1])
+
+    # Delete button (available in both modes)
+    if st.button("Delete Card"):
+        delete_card(st.session_state.current_card_id)
+        st.success("Card deleted successfully!")
+        st.session_state.current_screen = "home"
+        st.rerun()
 
 # Initialize the app
 init_db()

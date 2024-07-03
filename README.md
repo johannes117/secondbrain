@@ -100,3 +100,9 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - [Fuzzywuzzy](https://github.com/seatgeek/fuzzywuzzy)
 - [Python-Levenshtein](https://github.com/ztane/python-Levenshtein)
 
+## Troubleshooting
+
+Distutils is no longer supported in python 3.12, you need to run the following command to install it:
+```
+pip install --upgrade pip setuptools wheel
+```

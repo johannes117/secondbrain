@@ -1,8 +1,6 @@
 import streamlit as st
 import sqlite3
-import pandas as pd
-import json
-from fuzzywuzzy import fuzz, process
+from rapidfuzz import fuzz
 
 # Initialize database
 def init_db():
@@ -20,7 +18,7 @@ def init_db():
 def add_card(content):
     conn = sqlite3.connect('cards.db')
     c = conn.cursor()
-    c.execute('INSERT INTO cards (content) VALUES (?)', (json.dumps(content),))
+    c.execute('INSERT INTO cards (content) VALUES (?)', (content,))
     conn.commit()
     conn.close()
 
@@ -38,10 +36,9 @@ def search_cards(query, threshold=70):
     all_cards = get_all_cards()
     matched_cards = []
     for card in all_cards:
-        content = json.loads(card[1])
-        score = fuzz.token_set_ratio(query, content)
+        score = fuzz.token_set_ratio(query, card[1])
         if score >= threshold:
-            matched_cards.append((card[0], content, score))
+            matched_cards.append((card[0], card[1], score))
     return matched_cards
 
 # Initialize the app
@@ -66,7 +63,7 @@ elif option == 'View All Cards':
     st.header('All Cards')
     cards = get_all_cards()
     for card in cards:
-        st.json(json.loads(card[1]))
+        st.text_area(f"Card ID: {card[0]}", value=card[1], height=200)
 
 elif option == 'Search Cards':
     st.header('Search Cards')
@@ -77,7 +74,6 @@ elif option == 'Search Cards':
         if results:
             for result in results:
                 st.write(f"Card ID: {result[0]} | Match Score: {result[2]}")
-                st.json(result[1])
+                st.text_area("Card Content", value=result[1], height=200)
         else:
             st.warning('No matching cards found')
-

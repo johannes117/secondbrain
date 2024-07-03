@@ -1,7 +1,7 @@
 # auth.py
 import streamlit as st
 import sqlite3
-from utils import hash_password
+from utils import hash_password, generate_session_token
 
 def register_user(username, password):
     conn = sqlite3.connect('cards.db')
@@ -20,7 +20,15 @@ def login_user(username, password):
     conn = sqlite3.connect('cards.db')
     c = conn.cursor()
     hashed_password = hash_password(password)
-    c.execute('SELECT id FROM users WHERE username = ? AND password = ?', (username, hashed_password))
+    c.execute('SELECT id, username FROM users WHERE username = ? AND password = ?', (username, hashed_password))
+    user = c.fetchone()
+    conn.close()
+    return user
+
+def check_session_token(token):
+    conn = sqlite3.connect('cards.db')
+    c = conn.cursor()
+    c.execute('SELECT id, username FROM users WHERE session_token = ?', (token,))
     user = c.fetchone()
     conn.close()
     return user
@@ -29,18 +37,27 @@ def login_screen():
     st.title('Login')
     username = st.text_input('Username')
     password = st.text_input('Password', type='password')
+    remember_me = st.checkbox('Remember Me')
     if st.button('Login'):
         user = login_user(username, password)
         if user:
             st.session_state.user_id = user[0]
-            st.session_state.username = username
+            st.session_state.username = user[1]
+            if remember_me:
+                session_token = generate_session_token()
+                conn = sqlite3.connect('cards.db')
+                c = conn.cursor()
+                c.execute('UPDATE users SET session_token = ? WHERE id = ?', (session_token, user[0]))
+                conn.commit()
+                conn.close()
+                st.query_params['session_token'] = session_token  # Updated this line
             st.session_state.current_screen = "home"
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error('Invalid username or password')
     if st.button('Register'):
         st.session_state.current_screen = "register"
-        st.experimental_rerun()
+        st.rerun()
 
 def register_screen():
     st.title('Register')
@@ -50,9 +67,9 @@ def register_screen():
         if register_user(username, password):
             st.success('User registered successfully!')
             st.session_state.current_screen = "login"
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error('Username already exists')
     if st.button('Back to Login'):
         st.session_state.current_screen = "login"
-        st.experimental_rerun()
+        st.rerun()

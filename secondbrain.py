@@ -31,23 +31,35 @@ def get_all_cards():
     conn.close()
     return cards
 
-# Function to search cards based on content
+# Function to delete a card from the database
+def delete_card(card_id):
+    conn = sqlite3.connect('cards.db')
+    c = conn.cursor()
+    c.execute('DELETE FROM cards WHERE id = ?', (card_id,))
+    conn.commit()
+    conn.close()
+
+# Function to search cards based on content (case-insensitive)
 def search_cards(query, threshold=70):
     all_cards = get_all_cards()
     matched_cards = []
-    query = query.lower()  # Convert query to lowercase
+    query = query.lower()
     for card in all_cards:
-        card_content = card[1].lower()  # Convert card content to lowercase
+        card_content = card[1].lower()
         score = fuzz.token_set_ratio(query, card_content)
         if score >= threshold:
-            matched_cards.append((card[0], card[1], score))  # Store original content
+            matched_cards.append((card[0], card[1], score))
     return matched_cards
 
 # Function to display a card with Markdown formatting
 def display_card(card_id, content):
     st.markdown(f"### Card ID: {card_id}")
     st.markdown(content)
-    st.markdown("---")  # Add a horizontal line after each card
+    if st.button(f"Delete Card {card_id}"):
+        delete_card(card_id)
+        st.success(f"Card {card_id} deleted successfully!")
+        st.rerun()
+    st.markdown("---")
 
 # Initialize the app
 init_db()
@@ -70,8 +82,11 @@ if option == 'Add Card':
 elif option == 'View All Cards':
     st.header('All Cards')
     cards = get_all_cards()
-    for card in cards:
-        display_card(card[0], card[1])
+    if not cards:
+        st.info("No cards found. Add some cards to get started!")
+    else:
+        for card in cards:
+            display_card(card[0], card[1])
 
 elif option == 'Search Cards':
     st.header('Search Cards')

@@ -20,8 +20,8 @@ This project is a simplified offline version of the MyMind application built wit
 
 1. **Clone the repository:**
     ```bash
-    git clone https://github.com/yourusername/mymind-clone.git
-    cd mymind-clone
+    git clone https://github.com/johannes117/secondbrain.git
+    cd secondbrain
     ```
 
 2. **Create a virtual environment:**

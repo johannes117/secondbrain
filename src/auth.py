@@ -33,6 +33,14 @@ def check_session_token(token):
     conn.close()
     return user
 
+def load_session():
+    if 'session_token' in st.query_params:
+        user = check_session_token(st.query_params['session_token'])
+        if user:
+            st.session_state.user_id = user[0]
+            st.session_state.username = user[1]
+            st.session_state.current_screen = "home"
+
 def login_screen():
     st.title('Login')
     username = st.text_input('Username')
@@ -50,7 +58,7 @@ def login_screen():
                 c.execute('UPDATE users SET session_token = ? WHERE id = ?', (session_token, user[0]))
                 conn.commit()
                 conn.close()
-                st.query_params['session_token'] = session_token  # Updated this line
+                st.query_params['session_token'] = session_token
             st.session_state.current_screen = "home"
             st.rerun()
         else:

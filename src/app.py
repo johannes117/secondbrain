@@ -1,7 +1,7 @@
 # app.py
 import streamlit as st
 from database import init_db
-from auth import login_screen, register_screen, check_session_token
+from auth import login_screen, register_screen, check_session_token, load_session
 from ui_components import home_screen, add_card_screen, card_viewer_screen
 
 def main():
@@ -16,13 +16,9 @@ def main():
 
     st.set_page_config(initial_sidebar_state="collapsed")
 
-    # Check for existing session token using st.query_params
-    if 'session_token' in st.query_params:
-        user = check_session_token(st.query_params['session_token'])
-        if user:
-            st.session_state.user_id = user[0]
-            st.session_state.username = user[1]
-            st.session_state.current_screen = "home"
+    # Check for existing session token
+    if 'user_id' not in st.session_state:
+        load_session()
 
     if 'user_id' in st.session_state:
         st.sidebar.title('Settings')

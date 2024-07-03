@@ -65,9 +65,9 @@ def get_all_cards(user_id, limit=100):
     conn = sqlite3.connect('cards.db')
     c = conn.cursor()
     if limit is None:
-        c.execute('SELECT * FROM cards WHERE user_id = ? ORDER BY id DESC', (user_id,))
+        c.execute('SELECT id, user_id, content FROM cards WHERE user_id = ? ORDER BY id DESC', (user_id,))
     else:
-        c.execute('SELECT * FROM cards WHERE user_id = ? ORDER BY id DESC LIMIT ?', (user_id, limit))
+        c.execute('SELECT id, user_id, content FROM cards WHERE user_id = ? ORDER BY id DESC LIMIT ?', (user_id, limit))
     cards = c.fetchall()
     conn.close()
     return cards
@@ -133,7 +133,9 @@ def display_cards_grid(cards, cols=3):
             if i + j < len(cards):
                 with columns[j]:
                     with st.container():
-                        display_card_thumbnail(cards[i+j][0], cards[i+j][1])
+                        card_id = cards[i+j][0]
+                        card_content = cards[i+j][2]  # Ensure this gets the correct content
+                        display_card_thumbnail(card_id, card_content)
                         st.markdown("---")
 
 # Function to display the home screen

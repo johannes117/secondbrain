@@ -35,10 +35,12 @@ def get_all_cards():
 def search_cards(query, threshold=70):
     all_cards = get_all_cards()
     matched_cards = []
+    query = query.lower()  # Convert query to lowercase
     for card in all_cards:
-        score = fuzz.token_set_ratio(query, card[1])
+        card_content = card[1].lower()  # Convert card content to lowercase
+        score = fuzz.token_set_ratio(query, card_content)
         if score >= threshold:
-            matched_cards.append((card[0], card[1], score))
+            matched_cards.append((card[0], card[1], score))  # Store original content
     return matched_cards
 
 # Function to display a card with Markdown formatting

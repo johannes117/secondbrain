@@ -1,6 +1,6 @@
 import streamlit as st
 import sqlite3
-from rapidfuzz import fuzz
+from rapidfuzz import fuzz, process
 
 # Initialize database
 def init_db():
@@ -46,7 +46,7 @@ def search_cards(query, threshold=70):
     query = query.lower()
     for card in all_cards:
         card_content = card[1].lower()
-        score = fuzz.token_set_ratio(query, card_content)
+        score = fuzz.partial_ratio(query, card_content)
         if score >= threshold:
             matched_cards.append((card[0], card[1], score))
     return matched_cards
